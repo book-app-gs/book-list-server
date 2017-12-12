@@ -32,6 +32,7 @@ app.get('/api/v1/books', (request, response) => {
     .catch(err => {
         console.error(err)
     });
+});
 
 
 // app.use would apply to any page, so it's more efficient. Still rmemeber to place it at the bottom.
@@ -39,4 +40,4 @@ app.use((req, res) => {
     res.status(404).send('sorry, route does not exist.');
 });
 
-app.listen(PORT, () => console.log(`Listening on port: ${PORT}`)); // keep last
+app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
