@@ -18,6 +18,11 @@ client.on('error', err => console.error(err));
 
 app.use(cors());
 
+app.get('/index', (request, response) => {
+    response.sendFile('index.html', {root: './public'});
+  });
+
+  
 app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
 
 
@@ -40,4 +45,47 @@ app.use((req, res) => {
     res.status(404).send('sorry, route does not exist.');
 });
 
+//createBooks();
+
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
+
+
+// <<<<<<<<<<<<,<<>>>>>>>>>>>>>>>>>>>
+// function loadBooks() {
+//     client.query('SELECT COUNT(*) FROM books')
+//     .then(result => {
+//       if(!parseInt(result.rows[0].count)) {
+//         fs.readFile('./data/books.json', 'utf8', (err, fd) => {
+//           JSON.parse(fd).forEach(ele => {
+//             client.query(`
+//             INSERT INTO
+//             books (title, author, isbn, image_url, description)
+//             VALUES ($1, $2, $3, $4, $5);
+//           `,
+//             [ele.title, ele.author, ele.isbn, ele.image_url, ele.description])
+
+//             .catch(console.error);
+//           })
+//         })
+//       }
+//     })
+//   }
+
+//   function createBooks() {
+//     client.query(`
+//       CREATE TABLE IF NOT EXISTS books (
+//         book_id SERIAL PRIMARY KEY,
+//         author VARCHAR(50) NOT NULL,
+//         title VARCHAR(50) NOT NULL,
+//         isbn VARCHAR (50),
+//         image_url VARCHAR(500),
+//         description TEXT NOT NULL);`
+//     )
+//       .then(() => {
+//         console.log('created table')
+//         loadBooks();
+//       })
+//       .catch(err => {
+//         console.error(err);
+//       });
+//   }
