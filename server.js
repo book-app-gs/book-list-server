@@ -24,7 +24,26 @@ app.get('/index', (request, response) => {
     response.sendFile('index.html', {root: './public'});
   });
 
+//retrieve an array of book objects from the database, limited to only the book_id, title, author, and image_url.
+app.get('/api/v1/books', (request, response) => {
+    client.query(`SELECT book_id, title, author, and image_url FROM books`)
+      .then(result => {
+        response.send(result.rows);
+        response.send('results', result);
+        console.error('error from get request',err);
+    })
+    .catch(err => {
+        console.error(err)
+    });
+});
+
 app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
+
+// app.use would apply to any page, so it's more efficient. Still rmemeber to place it at the bottom.
+app.use((req, res) => {
+  res.status(404).send('sorry, route does not exist.');
+});
+
 
 //createBooks();
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
