@@ -2,7 +2,7 @@
 
 // export PORT=3000
 // export CLIENT_URL=http://localhost:8000
-// export DATABASE_URL=postgres://localhost:5432/task_app
+// export DATABASE_URL=postgres://localhost:5432/books_app
 // export DATABASE_URL=postgres://postgres:sunitha@localhost:5432/books_app 
 
 
@@ -38,6 +38,8 @@ app.get('/api/v1/books', (req, res) => {
 });
 
 //why cant the params id be in the same line as select
+//to test the following - if you cant test in browser bar use - $.get('http://localhost:3000/api/v1/books/3')
+//this simmulates the call being made from the view js
 app.get('/api/v1/books/:id', (req, res) => {
     client.query(`SELECT * FROM books WHERE book_id = $1`,
      [req.params.id])
@@ -51,12 +53,16 @@ app.get('/api/v1/books/:id', (req, res) => {
 });
 
 app.post('/api/v1/books/add', bodyParser, (req, res) => {
-    let {title, author, isbn, image_url, description} = req.body;
-    client.query(
-      'INSERT INTO books (title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
-        [title, author, isbn, image_url, description]
-    )
-      .catch(err => console.error(err))
+    console.log('inside post');
+    // let {title, author, isbn, image_url, description} = req.body;
+    // client.query(
+    //   'INSERT INTO books (title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
+    //     [title, author, isbn, image_url, description]
+    // )
+    client.query(`INSERT INTO books (title, author, isbn, image_url, description)
+    VALUES ($1, $2, $3, $4, $5);`,
+    [req.body.title, req.body.author, req.body.isbn, req.body.image_url, req.body.description ])
+     // .catch(err => console.error(err))
 });
 
 //app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
