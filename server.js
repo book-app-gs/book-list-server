@@ -9,6 +9,7 @@
 const express = require('express');
 const cors = require('cors');
 const pg = require('pg');
+const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,10 +25,6 @@ app.get('/index', (req, res) => {
     resp.sendFile('index.html', {root: './public'});
   });
 
-  
-//app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
-
-
 //retrieve an array of book objects from the database, limited to only the book_id, title, author, and image_url.
 app.get('/api/v1/books', (req, res) => {
     client.query(`SELECT book_id, title, author, image_url FROM books`)
@@ -40,53 +37,76 @@ app.get('/api/v1/books', (req, res) => {
     });
 });
 
+//why cant the params id be in the same line as select
+app.get('/api/v1/books/:id', (req, res) => {
+    client.query(`SELECT * FROM books WHERE book_id = $1`,
+     [req.params.id])
+      .then(result => {
+        res.send(result.rows);
+        console.log('select status code-' + res.statusCode);
+    })
+    .catch(err => {
+        console.error(err)
+    });
+});
 
+app.post('/api/v1/books/add', bodyParser, (req, res) => {
+    let {title, author, isbn, image_url, description} = req.body;
+    client.query(
+      'INSERT INTO books (title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
+        [title, author, isbn, image_url, description]
+    )
+      .catch(err => console.error(err))
+});
+
+//app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
 // app.use would apply to any page, so it's more efficient. Still rmemeber to place it at the bottom.
 app.use((req, res) => {
     res.status(404).send('sorry, route does not exist.');
 });
 
-//createBooks();
+createBooks();
 
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
 
 
 // <<<<<<<<<<<<,<<>>>>>>>>>>>>>>>>>>>
-// function loadBooks() {
-//     client.query('SELECT COUNT(*) FROM books')
-//     .then(result => {
-//       if(!parseInt(result.rows[0].count)) {
-//         fs.readFile('./data/books.json', 'utf8', (err, fd) => {
-//           JSON.parse(fd).forEach(ele => {
-//             client.query(`
-//             INSERT INTO
-//             books (title, author, isbn, image_url, description)
-//             VALUES ($1, $2, $3, $4, $5);
-//           `,
-//             [ele.title, ele.author, ele.isbn, ele.image_url, ele.description])
 
-//             .catch(console.error);
-//           })
-//         })
-//       }
-//     })
-//   }
+function loadBooks() {
+    client.query('SELECT COUNT(*) FROM books')
+    .then(result => {
+      if(!parseInt(result.rows[0].count)) {
+        fs.readFile('./data/books.json', 'utf8', (err, fd) => {
+          JSON.parse(fd).forEach(ele => {
+            client.query(`
+            INSERT INTO
+            books (title, author, isbn, image_url, description)
+            VALUES ($1, $2, $3, $4, $5);
+          `,
+            [ele.title, ele.author, ele.isbn, ele.image_url, ele.description])
 
-//   function createBooks() {
-//     client.query(`
-//       CREATE TABLE IF NOT EXISTS books (
-//         book_id SERIAL PRIMARY KEY,
-//         author VARCHAR(50) NOT NULL,
-//         title VARCHAR(50) NOT NULL,
-//         isbn VARCHAR (50),
-//         image_url VARCHAR(500),
-//         description TEXT NOT NULL);`
-//     )
-//       .then(() => {
-//         console.log('created table')
-//         loadBooks();
-//       })
-//       .catch(err => {
-//         console.error(err);
-//       });
-//   }
+            .catch(console.error);
+          })
+        })
+      }
+    })
+  }
+
+  function createBooks() {
+    client.query(`
+      CREATE TABLE IF NOT EXISTS books (
+        book_id SERIAL PRIMARY KEY,
+        author VARCHAR(50) NOT NULL,
+        title VARCHAR(50) NOT NULL,
+        isbn VARCHAR (50),
+        image_url VARCHAR(500),
+        description TEXT NOT NULL);`
+    )
+      .then(() => {
+        console.log('created table')
+        loadBooks();
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }
