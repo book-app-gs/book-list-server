@@ -20,8 +20,8 @@ client.on('error', err => console.error(err));
 
 app.use(cors());
 
-app.get('/index', (request, response) => {
-    response.sendFile('index.html', {root: './public'});
+app.get('/index', (req, res) => {
+    resp.sendFile('index.html', {root: './public'});
   });
 
   
@@ -29,11 +29,11 @@ app.get('/index', (request, response) => {
 
 
 //retrieve an array of book objects from the database, limited to only the book_id, title, author, and image_url.
-app.get('/api/v1/books', (request, response) => {
+app.get('/api/v1/books', (req, res) => {
     client.query(`SELECT book_id, title, author, image_url FROM books`)
       .then(result => {
-        response.send(result.rows);
-        console.error('error from get request',err);
+        res.send(result.rows);
+        console.log('select status code-' + res.statusCode);
     })
     .catch(err => {
         console.error(err)
