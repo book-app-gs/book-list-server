@@ -34,6 +34,7 @@ app.get('/api/v1/books', (req, res) => {
       .then(result => {
         res.send(result.rows);
         console.log('select status code-' + res.statusCode);
+        console.log('select method-' + res.Method);
     })
     .catch(err => {
         console.error(err)
