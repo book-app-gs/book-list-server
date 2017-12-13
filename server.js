@@ -3,7 +3,8 @@
 // export PORT=3000
 // export CLIENT_URL=http://localhost:8000
 // export DATABASE_URL=postgres://localhost:5432/task_app
-// export DATABASE_URL=postgres://postgres:sunitha@localhost:5432/books_app
+// export DATABASE_URL=postgres://postgres:sunitha@localhost:5432/books_app 
+
 
 const express = require('express');
 const cors = require('cors');
@@ -24,15 +25,14 @@ app.get('/index', (request, response) => {
   });
 
   
-app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
+//app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
 
 
 //retrieve an array of book objects from the database, limited to only the book_id, title, author, and image_url.
 app.get('/api/v1/books', (request, response) => {
-    client.query(`SELECT book_id, title, author, and image_url FROM books`)
+    client.query(`SELECT book_id, title, author, image_url FROM books`)
       .then(result => {
         response.send(result.rows);
-        response.send('results', result);
         console.error('error from get request',err);
     })
     .catch(err => {
