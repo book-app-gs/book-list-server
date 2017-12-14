@@ -65,6 +65,26 @@ app.post('/api/v1/books', (req, res) => {
 });
 
 
+app.delete('/api/v1/books/:id', (req, res) => {
+  client.query(
+    `DELETE FROM books WHERE book_id=${req.params.id}`
+  )
+  .then(() => res.status(204).send('Book deleted'))
+  .catch(err => {
+      console.error(err)
+  });
+});
+
+
+app.put('/api/v1/books/:id', (req, res) => {
+  client.query(
+    'UPDATE books (title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
+    [title, author, isbn, image_url, description]
+  )
+  .then(() => res.send('Update complete'))
+  .catch(console.error);
+});
+
 // app.use would apply to any page, so it's more efficient. Still rmemeber to place it at the bottom.
 app.use((req, res) => {
     res.status(404).send('sorry, route does not exist.');
