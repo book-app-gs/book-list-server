@@ -75,8 +75,10 @@ app.delete('/api/v1/books/:id', (req, res) => {
   });
 });
 
-
+// testing: 
+// $.ajax({ url: 'http://localhost:3000/api/v1/book/8', method: 'PUT', data: { title:"Hello", author: "Gregor", isbn: "123", image_url: "image.jpg", description: "this is a description" } })
 app.put('/api/v1/books/:id', (req, res) => {
+  console.log('inside book update PUT');
   client.query(
     'UPDATE books (title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
     [title, author, isbn, image_url, description]
