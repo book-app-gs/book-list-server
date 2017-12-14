@@ -20,6 +20,8 @@ client.connect();
 client.on('error', err => console.error(err));
 
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/index', (req, res) => {
     resp.sendFile('index.html', {root: './public'});
@@ -37,12 +39,10 @@ app.get('/api/v1/books', (req, res) => {
     });
 });
 
-//why cant the params id be in the same line as select
-//to test the following - if you cant test in browser bar use - $.get('http://localhost:3000/api/v1/books/3')
-//this simmulates the call being made from the view js
+//to simmulate the call being made from the view js
+//to test the following - if you cant test in browser bar use ----$.get('http://localhost:3000/api/v1/books/3')
 app.get('/api/v1/books/:id', (req, res) => {
-    client.query(`SELECT * FROM books WHERE book_id = $1`,
-     [req.params.id])
+    client.query(`SELECT * FROM books WHERE book_id=${req.params.id}`)
       .then(result => {
         res.send(result.rows);
         console.log('select status code-' + res.statusCode);
@@ -52,20 +52,18 @@ app.get('/api/v1/books/:id', (req, res) => {
     });
 });
 
-app.post('/api/v1/books/add', bodyParser, (req, res) => {
-    console.log('inside post');
-    // let {title, author, isbn, image_url, description} = req.body;
-    // client.query(
-    //   'INSERT INTO books (title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
-    //     [title, author, isbn, image_url, description]
-    // )
-    client.query(`INSERT INTO books (title, author, isbn, image_url, description)
-    VALUES ($1, $2, $3, $4, $5);`,
-    [req.body.title, req.body.author, req.body.isbn, req.body.image_url, req.body.description ])
-     // .catch(err => console.error(err))
+//testing - $.post('http://localhost:3000/api/v1/books', {title:"Hello", author: "Gregor", isbn: "123", image_url: "this.image_url", description: "this.description"})
+app.post('/api/v1/books', (req, res) => {
+ 
+    let {title, author, isbn, image_url, description} = req.body;
+    client.query(
+      'INSERT INTO books (title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
+        [title, author, isbn, image_url, description]
+     )
+    .catch(err => console.error(err))
 });
 
-//app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
+
 // app.use would apply to any page, so it's more efficient. Still rmemeber to place it at the bottom.
 app.use((req, res) => {
     res.status(404).send('sorry, route does not exist.');
@@ -116,3 +114,5 @@ function loadBooks() {
         console.error(err);
       });
   }
+
+  // initial server.js test - app.get('/', (req, res) => res.send('Testing 1, 2, 3'));
