@@ -1,5 +1,3 @@
-import { request } from 'https';
-
 'use strict'
 
 // export PORT=3000
@@ -16,7 +14,6 @@ const fs = require('fs');
 const superagent = require ('superagent');
 
 const app = express();
-const agent = superagent();
 const PORT = process.env.PORT || 3000;
 const CLIENT_URL = process.env.CLIENT_URL;
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
@@ -34,14 +31,41 @@ app.get('/api/v1/books/find', (req, res) => {
   // Map over the array of results to build an array of objects that match the book model in your database.
   // Send the newly constructed array of objects to your client in the response.
   //https://www.googleapis.com/books/v1/volumes?q=inauthor:frank%20herbert+intitle:dune+isbn:9780143111580
+  
+  /*
   //&key=${GOOGLE_API_KEY}
-  console.log('inside GET req for find')
   const query = `https://www.googleapis.com/books/v1/volumes?q=`;
-  agent.request.get(`${query}`)
-    .query(`inauthor:frank%20herbert+intitle:dune+isbn:9780143111580`)
-    .end(function(err, res){
-      console.log('error and response', err,res);
-    })  
+  // inauthor:frank%20herbert+intitle:dune+isbn:9780143111580
+
+  superagent.get(`${query}`)
+    .query('q' : req.body)
+    .end(function(err, res){})  
+    */
+
+    let url = 'https://www.googleapis.com/books/v1/volumes';
+    let query = ''
+    if(req.query.title) query += `+intitle:${req.query.title}`;
+    if(req.query.author) query += `+inauthor:${req.query.author}`;
+    if(req.query.isbn) query += `+isbn:${req.query.isbn}`;
+  
+    superagent.get(url)
+      .query({'q': query})
+      .query({'key': GOOGLE_API_KEY})
+      .then(response => response.body.items.map((book, idx) => {
+        let { title, authors, industryIdentifiers, imageLinks, description } = book.volumeInfo;
+        let placeholderImage = 'http://www.newyorkpaddy.com/images/covers/NoCoverAvailable.jpg';
+  
+        return {
+          title: title ? title : 'No title available',
+          author: authors ? authors[0] : 'No authors available',
+          isbn: industryIdentifiers ? `ISBN_13 ${industryIdentifiers[0].identifier}` : 'No ISBN available',
+          image_url: imageLinks ? imageLinks.smallThumbnail : placeholderImage,
+          description: description ? description : 'No description available',
+          book_id: industryIdentifiers ? `${industryIdentifiers[0].identifier}` : '',
+        }
+      }))
+      .then(arr => res.send(arr))
+      .catch(console.error)
 });
 
 app.get('/api/v1/books/find/:isbn', (req, res) => {
