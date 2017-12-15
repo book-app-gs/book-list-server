@@ -1,3 +1,5 @@
+import { request } from 'https';
+
 'use strict'
 
 // export PORT=3000
@@ -14,6 +16,7 @@ const fs = require('fs');
 const superagent = require ('superagent');
 
 const app = express();
+const agent = superagent();
 const PORT = process.env.PORT || 3000;
 const CLIENT_URL = process.env.CLIENT_URL;
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
@@ -30,6 +33,15 @@ app.get('/api/v1/books/find', (req, res) => {
   // proxy a superagent request from the client to the Google Books API and return a list of ten books that match the search query.
   // Map over the array of results to build an array of objects that match the book model in your database.
   // Send the newly constructed array of objects to your client in the response.
+  //https://www.googleapis.com/books/v1/volumes?q=inauthor:frank%20herbert+intitle:dune+isbn:9780143111580
+  //&key=${GOOGLE_API_KEY}
+  console.log('inside GET req for find')
+  const query = `https://www.googleapis.com/books/v1/volumes?q=`;
+  agent.request.get(`${query}`)
+    .query(`inauthor:frank%20herbert+intitle:dune+isbn:9780143111580`)
+    .end(function(err, res){
+      console.log('error and response', err,res);
+    })  
 });
 
 app.get('/api/v1/books/find/:isbn', (req, res) => {
