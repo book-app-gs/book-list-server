@@ -11,10 +11,12 @@ const cors = require('cors');
 const pg = require('pg');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const superagent = require ('superagent');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const CLIENT_URL = process.env.CLIENT_URL;
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
 const client = new pg.Client(process.env.DATABASE_URL);
 client.connect();
@@ -24,9 +26,21 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+app.get('/api/v1/books/find', (req, res) => {
+  // proxy a superagent request from the client to the Google Books API and return a list of ten books that match the search query.
+  // Map over the array of results to build an array of objects that match the book model in your database.
+  // Send the newly constructed array of objects to your client in the response.
+});
+
+app.get('/api/v1/books/find/:isbn', (req, res) => {
+  // proxy a superagent request from the client to the Google Books API and return a single book by the ISBN.
+  // Map over the array's single object and return a new object that matches the book model in your database
+  // Send the newly constructed book to your client in the response.
+});
+
 app.get('/index', (req, res) => {
-    resp.sendFile('index.html', {root: './public'});
-  });
+  resp.sendFile('index.html', {root: './public'});
+});
 
 //retrieve an array of book objects from the database, limited to only the book_id, title, author, and image_url.
 app.get('/api/v1/books', (req, res) => {
