@@ -65,9 +65,11 @@ app.post('/api/v1/books', (req, res) => {
 });
 
 
+// `DELETE FROM books WHERE book_id=${req.params.id}` - dont do this cause it risks what is being passed in params.id
 app.delete('/api/v1/books/:id', (req, res) => {
   client.query(
-    `DELETE FROM books WHERE book_id=${req.params.id}`
+    `DELETE FROM books WHERE book_id=$1;`,
+    [req.params.id]
   )
   .then(() => res.status(204).send('Book deleted'))
   .catch(err => {
@@ -78,10 +80,17 @@ app.delete('/api/v1/books/:id', (req, res) => {
 // testing: 
 // $.ajax({ url: 'http://localhost:3000/api/v1/book/8', method: 'PUT', data: { title:"Hello", author: "Gregor", isbn: "123", image_url: "image.jpg", description: "this is a description" } })
 app.put('/api/v1/books/:id', (req, res) => {
+  let {title, author, isbn, image_url, description} = req.body;
+
   console.log('inside book update PUT');
-  client.query(
-    'UPDATE books (title, author, isbn, image_url, description) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING',
-    [title, author, isbn, image_url, description]
+  client.query(`UPDATE books
+      SET title=$1,
+      author=$2,
+      isbn=$3,
+      image_url=$4, 
+      description=$5 WHERE book_id=$6`,
+
+    [title, author, isbn, image_url, description, req.params.id]
   )
   .then(() => res.send('Update complete'))
   .catch(console.error);
