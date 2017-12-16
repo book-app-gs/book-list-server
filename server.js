@@ -36,17 +36,18 @@ app.get('/api/v1/books/find', (req, res) => {
     .query('q' : req.body)
     .end(function(err, res){})  
     */
+  
+    console.log('req-',req.query);  
+
+    let query = ''
+    if(req.query.title) query += `+intitle:${req.query.title}`;
+    if(req.query.author) query += `+inauthor:${req.query.author}`;
+    if(req.query.isbn) query += `+isbn:${req.query.isbn}`;
     
-    // let query = ''
-    // if(req.query.title) query += `+intitle:${req.query.title}`;
-    // if(req.query.author) query += `+inauthor:${req.query.author}`;
-    // if(req.query.isbn) query += `+isbn:${req.query.isbn}`;
-    
-    console.log('queryStr',req.query.query);
-    
+
     let url = 'https://www.googleapis.com/books/v1/volumes';
     superagent.get(url)
-      .query({'q': req.query.query})
+      .query({'q': query})
       .query({'key': GOOGLE_API_KEY})
       .then(res => res.body.items.map((book, idx) => {
         let { title, authors, industryIdentifiers, imageLinks, description } = book.volumeInfo;
