@@ -26,46 +26,45 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+// to test from console - $.get('http://localhost:3000/api/v1/books/find', {"inauthor":"herbert","isbn":"9780143111580","intitle":"dune"})
 app.get('/api/v1/books/find', (req, res) => {
-  // proxy a superagent request from the client to the Google Books API and return a list of ten books that match the search query.
-  // Map over the array of results to build an array of objects that match the book model in your database.
-  // Send the newly constructed array of objects to your client in the response.
-  //https://www.googleapis.com/books/v1/volumes?q=inauthor:frank%20herbert+intitle:dune+isbn:9780143111580
-  
-  /*
-  //&key=${GOOGLE_API_KEY}
-  const query = `https://www.googleapis.com/books/v1/volumes?q=`;
-  // inauthor:frank%20herbert+intitle:dune+isbn:9780143111580
 
+  //https://www.googleapis.com/books/v1/volumes?q=inauthor:frank%20herbert+intitle:dune+isbn:9780143111580  
+  /* const query = `https://www.googleapis.com/books/v1/volumes?`;
+  // inauthor:frank%20herbert+intitle:dune+isbn:9780143111580
   superagent.get(`${query}`)
     .query('q' : req.body)
     .end(function(err, res){})  
     */
+    
+    // let query = ''
+    // if(req.query.title) query += `+intitle:${req.query.title}`;
+    // if(req.query.author) query += `+inauthor:${req.query.author}`;
+    // if(req.query.isbn) query += `+isbn:${req.query.isbn}`;
+    console.log('request', req.body);    
+    let query = `{"inauthor":"${req.body.author}","isbn":"${req.body.isbn}","intitle":"${req.body.title}"}`;
+    console.log('query', query);
 
-    let url = 'https://www.googleapis.com/books/v1/volumes';
-    let query = ''
-    if(req.query.title) query += `+intitle:${req.query.title}`;
-    if(req.query.author) query += `+inauthor:${req.query.author}`;
-    if(req.query.isbn) query += `+isbn:${req.query.isbn}`;
+    
+    // let url = 'https://www.googleapis.com/books/v1/volumes';
+    // superagent.get(url)
+    //   .query({'q': req.body})
+    //   .query({'key': GOOGLE_API_KEY})
+    //   .then(response => response.body.items.map((book, idx) => {
+    //     let { title, authors, industryIdentifiers, imageLinks, description } = book.volumeInfo;
+    //     let placeholderImage = 'http://www.newyorkpaddy.com/images/covers/NoCoverAvailable.jpg';
   
-    superagent.get(url)
-      .query({'q': query})
-      .query({'key': GOOGLE_API_KEY})
-      .then(response => response.body.items.map((book, idx) => {
-        let { title, authors, industryIdentifiers, imageLinks, description } = book.volumeInfo;
-        let placeholderImage = 'http://www.newyorkpaddy.com/images/covers/NoCoverAvailable.jpg';
-  
-        return {
-          title: title ? title : 'No title available',
-          author: authors ? authors[0] : 'No authors available',
-          isbn: industryIdentifiers ? `ISBN_13 ${industryIdentifiers[0].identifier}` : 'No ISBN available',
-          image_url: imageLinks ? imageLinks.smallThumbnail : placeholderImage,
-          description: description ? description : 'No description available',
-          book_id: industryIdentifiers ? `${industryIdentifiers[0].identifier}` : '',
-        }
-      }))
-      .then(arr => res.send(arr))
-      .catch(console.error)
+    //     return {
+    //       title: title ? title : 'No title available',
+    //       author: authors ? authors[0] : 'No authors available',
+    //       isbn: industryIdentifiers ? `ISBN_13 ${industryIdentifiers[0].identifier}` : 'No ISBN available',
+    //       image_url: imageLinks ? imageLinks.smallThumbnail : placeholderImage,
+    //       description: description ? description : 'No description available',
+    //       book_id: industryIdentifiers ? `${industryIdentifiers[0].identifier}` : '',
+    //     }
+    //   }))
+    //   .then(arr => res.send(arr))
+    //   .catch(console.error)
 });
 
 app.get('/api/v1/books/find/:isbn', (req, res) => {
@@ -130,17 +129,26 @@ app.delete('/api/v1/books/:id', (req, res) => {
 // testing: 
 // $.ajax({ url: 'http://localhost:3000/api/v1/book/8', method: 'PUT', data: { title:"Hello", author: "Gregor", isbn: "123", image_url: "image.jpg", description: "this is a description" } })
 app.put('/api/v1/books/:id', (req, res) => {
-  let {title, author, isbn, url, description} = req.body;
+  let {title, author, isbn, url, description, book_id} = req.body;
+  
+  console.log('inside book update PUT', title, author, isbn, url, description, book_id);
 
-  console.log('inside book update PUT', title, author, isbn, url, description);
+  //because of the way we are using $1 etc instead of the below format - we have to make sure null values are being taken care of before updating in database
+  // let que = `UPDATE books
+  // SET title='${title}',
+  // author='${author}',
+  // isbn='${isbn}',
+  // image_url='${url}', 
+  // description='${description}' WHERE book_id=${book_id}`
+
+
   client.query(`UPDATE books
       SET title=$1,
       author=$2,
       isbn=$3,
       image_url=$4, 
-      description=$5 WHERE book_id=$6`,
-
-    [title, author, isbn, image_url, description, req.params.id]
+      description=$5 WHERE book_id=$6;`,
+      [title, author, isbn, url, description, book_id]  
   )
   .then(() => res.send('Update complete'))
   .catch(console.error);
