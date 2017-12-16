@@ -26,10 +26,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+  //https://www.googleapis.com/books/v1/volumes?q=inauthor:frank%20herbert+intitle:dune+isbn:9780143111580  
 // to test from console - $.get('http://localhost:3000/api/v1/books/find', {"inauthor":"herbert","isbn":"9780143111580","intitle":"dune"})
 app.get('/api/v1/books/find', (req, res) => {
 
-  //https://www.googleapis.com/books/v1/volumes?q=inauthor:frank%20herbert+intitle:dune+isbn:9780143111580  
   /* const query = `https://www.googleapis.com/books/v1/volumes?`;
   // inauthor:frank%20herbert+intitle:dune+isbn:9780143111580
   superagent.get(`${query}`)
@@ -41,30 +41,28 @@ app.get('/api/v1/books/find', (req, res) => {
     // if(req.query.title) query += `+intitle:${req.query.title}`;
     // if(req.query.author) query += `+inauthor:${req.query.author}`;
     // if(req.query.isbn) query += `+isbn:${req.query.isbn}`;
-    console.log('request', req.body);    
-    let query = `{"inauthor":"${req.body.author}","isbn":"${req.body.isbn}","intitle":"${req.body.title}"}`;
-    console.log('query', query);
-
     
-    // let url = 'https://www.googleapis.com/books/v1/volumes';
-    // superagent.get(url)
-    //   .query({'q': req.body})
-    //   .query({'key': GOOGLE_API_KEY})
-    //   .then(response => response.body.items.map((book, idx) => {
-    //     let { title, authors, industryIdentifiers, imageLinks, description } = book.volumeInfo;
-    //     let placeholderImage = 'http://www.newyorkpaddy.com/images/covers/NoCoverAvailable.jpg';
+    console.log('queryStr',req.query.query);
+    
+    let url = 'https://www.googleapis.com/books/v1/volumes';
+    superagent.get(url)
+      .query({'q': req.query.query})
+      .query({'key': GOOGLE_API_KEY})
+      .then(res => res.body.items.map((book, idx) => {
+        let { title, authors, industryIdentifiers, imageLinks, description } = book.volumeInfo;
+        let placeholderImage = 'http://www.newyorkpaddy.com/images/covers/NoCoverAvailable.jpg';
   
-    //     return {
-    //       title: title ? title : 'No title available',
-    //       author: authors ? authors[0] : 'No authors available',
-    //       isbn: industryIdentifiers ? `ISBN_13 ${industryIdentifiers[0].identifier}` : 'No ISBN available',
-    //       image_url: imageLinks ? imageLinks.smallThumbnail : placeholderImage,
-    //       description: description ? description : 'No description available',
-    //       book_id: industryIdentifiers ? `${industryIdentifiers[0].identifier}` : '',
-    //     }
-    //   }))
-    //   .then(arr => res.send(arr))
-    //   .catch(console.error)
+        return {
+          title: title ? title : 'No title available',
+          author: authors ? authors[0] : 'No authors available',
+          isbn: industryIdentifiers ? `ISBN_13 ${industryIdentifiers[0].identifier}` : 'No ISBN available',
+          image_url: imageLinks ? imageLinks.smallThumbnail : placeholderImage,
+          description: description ? description : 'No description available',
+          book_id: industryIdentifiers ? `${industryIdentifiers[0].identifier}` : '',
+        }
+      }))
+      .then(arr => res.send(arr))
+      .catch(console.error)
 });
 
 app.get('/api/v1/books/find/:isbn', (req, res) => {
